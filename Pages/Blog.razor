@@ -1,0 +1,95 @@
+﻿@page "/blog"
+@using blazor_blog.Models;
+@using blazor_blog.Data;
+@using Microsoft.EntityFrameworkCore
+
+@inject IDbContextFactory<BlogContext> BlogContextFactory;
+
+
+<h3>Blog</h3>
+
+
+@foreach (var entry in _blogEntries)
+{
+   <BlogEntryView Entry="@entry" OnDelete="@DeleteAsync"/>
+}
+
+
+<input placeholder="Title"@bind="title" />
+<input placeholder="Content" @bind="content"/>
+<button @onclick="AddBlogEntry">Add</button>
+
+@code {
+
+    private List<BlogEntry> _blogEntries = new();
+    private string title = string.Empty,content=string.Empty;
+
+    public async Task DeleteAsync(BlogEntry entry)
+    {
+        using var ctx = BlogContextFactory.CreateDbContext();
+        ctx.Entries.Remove(entry);
+        await ctx.SaveChangesAsync();
+        await refreshEntries();
+    }
+
+    public async Task EditAsync(BlogEntry entry)
+    {
+        title = entry.Title;
+        content = entry.Content;
+    }
+
+    public async Task refreshEntries()
+    { 
+        _blogEntries.Clear();
+        await using var ctx = BlogContextFactory.CreateDbContext();
+        var loadedEntries = await ctx.Entries.OrderByDescending(e => e.PostedTime).ToListAsync();
+        _blogEntries.AddRange(loadedEntries);
+    }
+
+    private async void AddBlogEntry()
+    {
+        if (!string.IsNullOrEmpty(title) && !string.IsNullOrEmpty(content))
+        { 
+            using var ctx = BlogContextFactory.CreateDbContext();
+            var be = new BlogEntry { Title = title, Content = content };
+
+            ctx.Entries.Add(be);
+
+            if (await ctx.SaveChangesAsync() > 0)
+            {
+                _blogEntries.Insert(0,be); 
+                 title = "";
+                content = string.Empty;
+            }    
+           
+          
+        }
+    }
+
+      private async void DeleteEntry()
+    {
+        if (!string.IsNullOrEmpty(title) && !string.IsNullOrEmpty(content))
+        { 
+            using var ctx = BlogContextFactory.CreateDbContext();
+            var be = new BlogEntry { Title = title, Content = content };
+
+            ctx.Entries.Add(be);
+
+            if (await ctx.SaveChangesAsync() > 0)
+            {
+                _blogEntries.Insert(0,be); 
+                 title = "";
+                content = string.Empty;
+            }    
+           
+          
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        refreshEntries();
+    }
+  
+
+}
