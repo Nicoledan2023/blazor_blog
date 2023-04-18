@@ -7,7 +7,7 @@
        <h5>@Entry.PostedTime</h5>
         <p> @((MarkupString)Entry.Content)</p>
         <button @onclick="DeleteAsync">Delete</button>
-       
+        <button @onclick="EditAsync">Edit</button>
     </div>
 
 
@@ -18,10 +18,18 @@
     [Parameter]
     public EventCallback<BlogEntry> OnDelete { get; set; }
 
+
+    [Parameter]
+    public EventCallback<BlogEntry> OnEdit { get; set; }
   
     public async Task DeleteAsync()
     {
         await OnDelete.InvokeAsync(Entry);
+    }
+
+     public async Task EditAsync()
+    {
+        await OnEdit.InvokeAsync(Entry);
     }
 
      
