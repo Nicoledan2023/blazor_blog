@@ -39,7 +39,6 @@
         title = entry.Title;
         content = entry.Content;
         id = entry.BlogEntryId;
-        //await RefreshEntries();
     }
 
     public async Task RefreshEntries()
@@ -56,22 +55,18 @@
 
     private async void AddBlogEntry()
     {
-        // check if actual content
+     
         if (!string.IsNullOrWhiteSpace(title) && !string.IsNullOrWhiteSpace(content))
         {
-            // context from factory
             using var ctx = BlogContextFactory.CreateDbContext();
 
-            // make blogentry object
             var be = new BlogEntry { Title = title, Content = content };
-
-            // add new beo to context for tracking
             if (id == null)
             {
                 ctx.Entries.Add(be);
             }
             else
-            { // edit
+            { 
                 _logger.LogInformation("be " + be.BlogEntryId);
                 var mod = await ctx.Entries.Where(bentry => bentry.BlogEntryId == id).FirstOrDefaultAsync();
                 if (mod != null)
@@ -84,13 +79,9 @@
 
             }
 
-            // save the new entry
             if (await ctx.SaveChangesAsync() > 0)
             {
-                // add new entry to beginning of app be list
                 _blogEntries.Insert(0, be);
-
-                // clear input fields
                 title = "";
                 content = string.Empty;
                 if (id != null)
